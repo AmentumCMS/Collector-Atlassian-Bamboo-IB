@@ -1,0 +1,3 @@
+[submodule "bamboo-agent-base-source"]
+	path = bamboo-agent-base-source
+	url = https://bitbucket.org/atlassian-docker/docker-bamboo-agent-base.git
