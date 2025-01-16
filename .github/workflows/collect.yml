@@ -33,6 +33,10 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y skopeo pigz
 
+      - name: DSO Login
+        run: |
+          skopeo login registry1.dso.mil -u ${{ secrets.REGISTRY_USER }} -p ${{ secrets.REGISTRY_TOKEN }}
+
       - name: Run Skopeo Sync
         run: |
           skopeo sync \
@@ -40,22 +44,42 @@ jobs:
 
       - name: Directory Contents
         run: |
-          echo "Directory Contents"
-          ls -lAhS *
-          echo -e "\nDirectory Size"
-          du -hd1 
+          echo -e "\nDirectory Contents"
+          ls -lAhS . ${{ vars.COLLECTOR }}
+          echo -e "\n\nDirectory Size"
+          du -hd1 . ${{ vars.COLLECTOR }}/*
 
       - name: TARchive Skopeo Output
         run: |
           tar -cv -Ipigz --remove-files \
-            -f ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz ${{ vars.COLLECTOR }}
-          ls -Alh ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz
+            -f ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz ${{ vars.COLLECTOR }} \
+          | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.txt
+      
+      - name: Generate Hash
+        run: |
+          sha256sum -b ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz | tee \
+            ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.sha
+ 
+      - name: List files 
+        run: ls -Alh ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz*
 
       - name: Upload TARchive
         uses: actions/upload-artifact@v4
         with:
           name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz
           path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz
+
+      - name: Upload TARchive SHA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.sha
+          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.sha
+
+      - name: Upload TARchive ToC
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.txt
+          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.txt
 
   Code:
     needs: [Date]
@@ -91,13 +115,13 @@ jobs:
       contents: write
       pull-requests: read
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
       - name: Install mkisofs
         run: |
           sudo apt-get update -y
           sudo apt-get install -y mkisofs isomd5sum
-
-      - name: Check out repository code
-        uses: actions/checkout@v4
 
       - name: Download Artifacts
         uses: actions/download-artifact@v4
