@@ -1,4 +1,4 @@
-name: Bamboo-IB Collector
+name: Atlassian Bamboo IB Collector
 run-name: ${{ github.actor }} is Collecting 🚀
 on:
   push:
