@@ -4,3 +4,9 @@
 [submodule "bamboo-lts-ib"]
 	path = bamboo-lts-ib
 	url = https://repo1.dso.mil/dsop/atlassian/bamboo-data-center/bamboo-lts.git
+[submodule "docker-bamboo-agent-base"]
+	path = docker-bamboo-agent-base
+	url = https://bitbucket.org/atlassian-docker/docker-bamboo-agent-base.git
+[submodule "docker-bamboo-server"]
+	path = docker-bamboo-server
+	url = https://bitbucket.org/atlassian-docker/docker-bamboo-server.git
